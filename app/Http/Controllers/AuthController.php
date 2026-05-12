@@ -33,7 +33,7 @@ class AuthController extends Controller
         $request->session()->regenerate();
         $request->session()->put('username', $user->username);
 
-        return redirect()->route('movies.index');
+        return redirect()->route('showtimes.index');
     }
 
     public function logout(Request $request): RedirectResponse

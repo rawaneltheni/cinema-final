@@ -1,8 +1,8 @@
 <x-layouts.app title="Login">
     <main class="auth">
         <section class="panel">
-            <h1>Cinema Login</h1>
-            <p class="muted">Enter your username and password to manage cinema movie records.</p>
+            <h1>Cinema Showtime Management System</h1>
+            <p class="muted">Enter your username and password to manage cinema schedules.</p>
 
             <form action="{{ route('login.store') }}" method="POST">
                 @csrf
