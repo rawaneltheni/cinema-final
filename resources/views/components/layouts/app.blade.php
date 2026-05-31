@@ -38,6 +38,12 @@
         .secondary { background: #2b3342; color: #fff; }
         .danger { background: #991b1b; color: #fff; }
         .ghost { background: transparent; color: #fff; border: 1px solid rgba(255,255,255,.35); }
+        .auth-divider { display: flex; align-items: center; gap: 12px; color: #a7b0c0; font-size: 13px; margin: 20px 0; }
+        .auth-divider::before, .auth-divider::after { content: ""; flex: 1; height: 1px; background: #2b3342; }
+        .google-login { width: 100%; gap: 10px; background: #fff; color: #1f2937; border: 1px solid rgba(255, 255, 255, .18); box-shadow: 0 12px 28px rgba(0, 0, 0, .2); }
+        .google-login:hover { filter: none; background: #f8fafc; box-shadow: 0 14px 30px rgba(0, 0, 0, .28); }
+        .google-mark { width: 22px; height: 22px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-style: normal; font-weight: 800; color: #fff; background: conic-gradient(from -45deg, #4285f4 0 25%, #34a853 0 50%, #fbbc05 0 75%, #ea4335 0); font-family: Arial, Helvetica, sans-serif; font-size: 14px; }
+        .google-mark::before { content: "G"; }
         .toolbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 20px; flex-wrap: wrap; }
         .search { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 18px; }
         .search input { min-width: 260px; }

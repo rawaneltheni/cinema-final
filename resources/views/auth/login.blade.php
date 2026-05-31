@@ -32,6 +32,13 @@
 
                 <button class="button primary" type="submit">Login</button>
             </form>
+
+            <div class="auth-divider"><span>or</span></div>
+
+            <a href="{{ route('login.google') }}" class="button google-login btn btn-danger">
+                <i class="fab fa-google google-mark" aria-hidden="true"></i>
+                تسجيل الدخول بـ Google
+            </a>
         </section>
     </main>
 </x-layouts.app>
