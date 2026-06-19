@@ -59,6 +59,7 @@ Route::get('auth/google/callback', [GoogleController::class, 'handleGoogleCallba
 
 // These showtime CRUD routes are protected by the username session middleware.
 Route::middleware('username.session')->group(function () {
+    Route::get('/calendar', [ShowtimeController::class, 'calendar'])->name('calendar');
     // Resource routes create index, create, store, edit, update, and destroy routes.
     Route::resource('showtimes', ShowtimeController::class)->except(['show']);
 });
