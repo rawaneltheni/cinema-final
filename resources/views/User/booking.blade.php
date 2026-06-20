@@ -1,66 +1,115 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Book {{ $movie->movie_title }}</title>
-    <style>
-        * { box-sizing: border-box; }
-        body { margin: 0; min-height: 100vh; background: #07080d; color: #f8fafc; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
-        a { color: inherit; text-decoration: none; }
-        .shell { min-height: 100vh; display: grid; place-items: center; padding: 28px; background: radial-gradient(circle at 20% 0%, rgba(220, 38, 38, .24), transparent 34%), #07080d; }
-        .panel { width: min(860px, 100%); display: grid; grid-template-columns: minmax(190px, 280px) 1fr; gap: 24px; background: #11131b; border: 1px solid rgba(255,255,255,.1); border-radius: 8px; overflow: hidden; box-shadow: 0 24px 70px rgba(0,0,0,.42); }
-        .poster { min-height: 420px; background: #1f2937; }
-        .poster img { width: 100%; height: 100%; object-fit: cover; display: block; }
-        .poster-empty { height: 100%; display: grid; place-items: center; color: #94a3b8; font-weight: 800; padding: 18px; text-align: center; }
-        .content { padding: 30px; display: flex; flex-direction: column; justify-content: center; }
-        .eyebrow { color: #fca5a5; font-weight: 800; text-transform: uppercase; letter-spacing: .12em; font-size: 13px; margin-bottom: 12px; }
-        h1 { margin: 0 0 14px; font-size: clamp(32px, 6vw, 58px); line-height: 1; letter-spacing: 0; }
-        .details { display: grid; gap: 10px; color: #cbd5e1; margin: 18px 0 28px; }
-        .actions { display: flex; gap: 12px; flex-wrap: wrap; }
-        .button { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; border-radius: 999px; padding: 0 18px; font-weight: 900; }
-        .primary { background: #dc2626; color: #fff; box-shadow: 0 18px 38px rgba(220, 38, 38, .3); }
-        .secondary { background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.16); }
-        @media (max-width: 720px) {
-            .panel { grid-template-columns: 1fr; }
-            .poster { min-height: auto; aspect-ratio: 2 / 3; }
-            .content { padding: 24px; }
-        }
-    </style>
-</head>
-<body>
-    @php
-        $imageUrl = $movie->image && str_starts_with($movie->image, 'http')
-            ? $movie->image
-            : ($movie->image ? asset($movie->image) : null);
-    @endphp
+@extends('layouts.app')
 
-    <main class="shell">
-        <section class="panel">
-            <div class="poster">
-                @if ($imageUrl)
-                    <img src="{{ $imageUrl }}" alt="{{ $movie->movie_title }} poster">
-                @else
-                    <div class="poster-empty">No poster available</div>
-                @endif
+@section('title', 'Dashboard | Cinema Reservation')
+
+@section('content')
+    <header class="flex flex-col gap-5 border-b border-white/10 pb-6 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+            <p class="text-sm uppercase tracking-[0.35em] text-red-500">Reservation Dashboard</p>
+            <h1 class="mt-2 text-4xl font-black text-white">Tonight's seats</h1>
+            <p class="mt-2 text-neutral-300">Signed in as <strong class="text-red-300">{{ $username }}</strong>.</p>
+        </div>
+
+        <form method="POST" action="{{ route('logout') }}">
+            @csrf
+            <button class="rounded-full border border-white/15 px-5 py-2.5 font-semibold text-neutral-100 transition hover:border-[#E50914] hover:text-red-300">
+                Logout
+            </button>
+        </form>
+    </header>
+
+    @if (session('status'))
+        <div class="mt-6 rounded-2xl border border-emerald-300/30 bg-emerald-400/10 px-4 py-3 text-sm text-emerald-100">
+            {{ session('status') }}
+        </div>
+    @endif
+
+    @if ($errors->any())
+        <div class="mt-6 rounded-2xl border border-red-300/30 bg-red-500/10 px-4 py-3 text-sm text-red-100">
+            <strong class="font-black">Please fix:</strong> {{ $errors->first() }}
+        </div>
+    @endif
+
+    <section class="grid gap-6 py-8 lg:grid-cols-[0.8fr_1.2fr]">
+        <div class="rounded-[2rem] border border-white/10 bg-neutral-950/80 p-6 shadow-2xl shadow-black/50">
+            <p class="text-sm uppercase tracking-[0.28em] text-red-500">Insert Record</p>
+            <h2 class="mt-2 text-2xl font-black text-white">New reservation</h2>
+
+            <form method="POST" action="{{ route('reservations.store') }}" class="mt-6 space-y-4">
+                @csrf
+                @include('reservations.partials.form', ['reservation' => null, 'buttonText' => 'Reserve Seat', 'seatMapReservations' => $seatMapReservations])
+            </form>
+        </div>
+
+        <div class="rounded-[2rem] border border-white/10 bg-black/75 p-6 shadow-2xl shadow-black/50">
+            <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                    <p class="text-sm uppercase tracking-[0.28em] text-red-500">Search Records</p>
+                    <h2 class="mt-2 text-2xl font-black text-white">Reservation list</h2>
+                </div>
+
+                <form method="GET" action="{{ route('reservations.index') }}" class="flex gap-2">
+                    <input
+                        name="search"
+                        value="{{ $search }}"
+                        class="w-full rounded-full border border-white/10 bg-neutral-900/90 px-4 py-2.5 text-white outline-none transition focus:border-[#E50914] sm:w-64"
+                        placeholder="Movie, customer, seat..."
+                    >
+                    <button class="rounded-full bg-[#E50914] px-5 py-2.5 font-black text-white transition hover:bg-red-700">Search</button>
+                </form>
             </div>
 
-            <div class="content">
-                <span class="eyebrow">Booking</span>
-                <h1>{{ $movie->movie_title }}</h1>
-                <div class="details">
-                    <span>Genre: {{ $movie->genre }}</span>
-                    <span>Date: {{ $movie->show_date->format('M j, Y') }}</span>
-                    <span>Time: {{ substr($movie->start_time, 0, 5) }} - {{ substr($movie->end_time, 0, 5) }}</span>
-                    <span>Available seats: {{ $movie->available_seats }}</span>
-                    <span>Ticket price: ${{ number_format($movie->ticket_price, 2) }}</span>
-                </div>
-                <div class="actions">
-                    <a class="button primary" href="#">Continue Booking</a>
-                    <a class="button secondary" href="{{ route('user.home') }}">Back to Movies</a>
-                </div>
+            <div class="mt-6 overflow-hidden rounded-3xl border border-white/10">
+                <table class="w-full min-w-[760px] border-collapse text-left text-sm">
+                    <thead class="bg-red-950/40 text-xs uppercase tracking-[0.2em] text-red-200">
+                        <tr>
+                            <th class="px-4 py-4">Customer</th>
+                            <th class="px-4 py-4">Movie</th>
+                            <th class="px-4 py-4">Theater</th>
+                            <th class="px-4 py-4">Seat</th>
+                            <th class="px-4 py-4">Show</th>
+                            <th class="px-4 py-4 text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-white/10">
+                        @forelse ($reservations as $reservation)
+                            <tr class="bg-neutral-950/60 text-neutral-200">
+                                <td class="px-4 py-4 font-semibold text-white">{{ $reservation->customer_name }}</td>
+                                <td class="px-4 py-4">{{ $reservation->movie_title }}</td>
+                                <td class="px-4 py-4">{{ $reservation->theater }}</td>
+                                <td class="px-4 py-4">
+                                    <span class="rounded-full bg-[#E50914] px-3 py-1 font-black text-white">{{ $reservation->seat_number }}</span>
+                                </td>
+                                <td class="px-4 py-4">{{ $reservation->show_date->format('M d, Y') }} at {{ substr($reservation->show_time, 0, 5) }}</td>
+                                <td class="px-4 py-4">
+                                    <div class="flex justify-end gap-2">
+                                        <a href="{{ route('reservations.edit', $reservation) }}" class="rounded-full border border-red-500/60 px-3 py-1.5 font-semibold text-red-200 transition hover:bg-[#E50914] hover:text-white">
+                                            Edit
+                                        </a>
+                                        <form method="POST" action="{{ route('reservations.destroy', $reservation) }}" onsubmit="return confirm('Delete this reservation?')">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button class="rounded-full border border-white/15 px-3 py-1.5 font-semibold text-neutral-200 transition hover:bg-white hover:text-black">
+                                                Delete
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="6" class="px-4 py-10 text-center text-neutral-400">
+                                    No reservations found. Add the first seat and the projector starts humming.
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
             </div>
-        </section>
-    </main>
-</body>
-</html>
+
+            <div class="mt-5">
+                {{ $reservations->links() }}
+            </div>
+        </div>
+    </section>
+@endsection

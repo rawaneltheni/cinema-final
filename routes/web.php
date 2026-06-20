@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Auth\GoogleController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\SeatReservationController;
 use App\Http\Controllers\ShowtimeController;
 use App\Http\Controllers\User\BookingController;
 use App\Http\Controllers\User\HomeController;
@@ -63,6 +64,13 @@ Route::get('auth/google/callback', [GoogleController::class, 'handleGoogleCallba
 Route::middleware('username.session')->group(function () {
     Route::get('/home', [HomeController::class, 'index'])->name('user.home');
     Route::get('/movies/{movie}/booking', [BookingController::class, 'create'])->name('movies.booking');
+
+    // Seat reservation dashboard (ported reservation index) and its CRUD actions.
+    Route::get('/reservations', [SeatReservationController::class, 'index'])->name('reservations.index');
+    Route::post('/reservations', [SeatReservationController::class, 'store'])->name('reservations.store');
+    Route::get('/reservations/{seatReservation}/edit', [SeatReservationController::class, 'edit'])->name('reservations.edit');
+    Route::put('/reservations/{seatReservation}', [SeatReservationController::class, 'update'])->name('reservations.update');
+    Route::delete('/reservations/{seatReservation}', [SeatReservationController::class, 'destroy'])->name('reservations.destroy');
 
     // Resource routes create index, create, store, edit, update, and destroy routes.
     Route::resource('showtimes', ShowtimeController::class)->except(['show']);
