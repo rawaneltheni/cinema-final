@@ -1,17 +1,17 @@
 @extends('layouts.app')
 
-@section('title', 'Edit Reservation | Cinema Reservation')
+@section('title', 'Edit Reservation | Cinema')
 
 @section('content')
     <header class="flex flex-col gap-5 border-b border-white/10 pb-6 sm:flex-row sm:items-center sm:justify-between">
         <div>
-            <p class="text-sm uppercase tracking-[0.35em] text-red-500">Update Record</p>
+            <p class="text-sm uppercase tracking-[0.35em] text-red-500">Update Reservation</p>
             <h1 class="mt-2 text-4xl font-black text-white">Edit seat {{ $reservation->seat_number }}</h1>
             <p class="mt-2 text-neutral-300">Signed in as <strong class="text-red-300">{{ $username }}</strong>.</p>
         </div>
 
-        <a href="{{ route('reservations.index') }}" class="rounded-full border border-white/15 px-5 py-2.5 text-center font-semibold text-neutral-100 transition hover:border-[#E50914] hover:text-red-300">
-            Back to Dashboard
+        <a href="{{ route('movies.booking', $movie) }}" class="rounded-full border border-white/15 px-5 py-2.5 text-center font-semibold text-neutral-100 transition hover:border-[#E50914] hover:text-red-300">
+            Back to Booking
         </a>
     </header>
 
@@ -22,11 +22,16 @@
     @endif
 
     <section class="mx-auto w-full max-w-2xl py-8">
-        <div class="rounded-[2rem] border border-white/10 bg-neutral-950/80 p-6 shadow-2xl shadow-black/50">
+        <div class="mb-6 rounded-[2rem] border border-white/10 bg-neutral-950/80 p-6 text-sm text-neutral-300 shadow-2xl shadow-black/50">
+            <p class="text-sm uppercase tracking-[0.28em] text-red-500">{{ $movie->movie_title }}</p>
+            <p class="mt-2">Hall {{ $movie->hall_number }} · {{ $movie->show_date->format('M j, Y') }} · {{ substr($movie->start_time, 0, 5) }} - {{ substr($movie->end_time, 0, 5) }}</p>
+        </div>
+
+        <div class="rounded-[2rem] border border-white/10 bg-black/75 p-6 shadow-2xl shadow-black/50">
             <form method="POST" action="{{ route('reservations.update', $reservation) }}" class="space-y-4">
                 @csrf
                 @method('PUT')
-                @include('reservations.partials.form', ['reservation' => $reservation, 'buttonText' => 'Update Reservation', 'seatMapReservations' => $seatMapReservations])
+                @include('reservations.partials.form', ['reservation' => $reservation, 'buttonText' => 'Update Reservation', 'bookedSeats' => $bookedSeats])
             </form>
         </div>
     </section>

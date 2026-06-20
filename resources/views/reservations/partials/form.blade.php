@@ -1,114 +1,42 @@
 @php
     $reservation ??= null;
-    $seatMapReservations ??= collect();
-    $selectedSeat = strtoupper(old('seat_number', $reservation?->seat_number ?? ''));
-    $selectedMovie = old('movie_title', $reservation?->movie_title);
-    $movieTheaters = config('cinema.movie_theaters');
-    $selectedTheater = old('theater', $reservation?->theater ?? ($movieTheaters[$selectedMovie] ?? ''));
-    $selectedShowDate = old('show_date', $reservation?->show_date?->format('Y-m-d') ?? today()->format('Y-m-d'));
-    $selectedShowTime = old('show_time', $reservation ? substr($reservation->show_time, 0, 5) : null);
-    $seatRows = ['A', 'B', 'C'];
-    $seatColumns = range(1, 6);
-    $movies = config('cinema.movies');
-    $showTimes = config('cinema.show_times');
+    $accountName ??= '';
+    $bookedSeats = collect($bookedSeats ?? [])->map(fn ($seat) => strtoupper($seat));
+    $currentSeat = strtoupper(old('seat_number', $reservation?->seat_number ?? ''));
+    $customerName = $reservation?->customer_name ?? $accountName;
+    $seatRows = config('cinema.seat_rows');
+    $seatColumns = config('cinema.seat_columns');
+    $totalSeats = count($seatRows) * count($seatColumns);
+    $bookedCount = $bookedSeats->count();
 @endphp
 
 <label class="block">
     <span class="text-sm font-semibold text-neutral-200">Customer name</span>
     <input
         name="customer_name"
-        value="{{ old('customer_name', $reservation?->customer_name) }}"
-        required
+        value="{{ $customerName }}"
+        readonly
         maxlength="80"
-        class="mt-2 w-full rounded-2xl border border-white/10 bg-neutral-900/90 px-4 py-3 text-white outline-none transition focus:border-[#E50914] focus:ring-4 focus:ring-red-600/20"
-        placeholder="Aisha Morgan"
+        class="mt-2 w-full cursor-not-allowed rounded-2xl border border-white/10 bg-neutral-900/60 px-4 py-3 text-neutral-200 outline-none"
     >
+    <span class="mt-2 block text-xs text-neutral-400">Booked under your account.</span>
 </label>
 
-<label class="block">
-    <span class="text-sm font-semibold text-neutral-200">Movie name</span>
-    <select
-        name="movie_title"
+<div class="rounded-2xl border border-red-600/30 bg-red-950/30 px-4 py-3">
+    <span class="text-sm font-semibold text-neutral-200">Selected seat</span>
+    <input
+        type="hidden"
+        name="seat_number"
+        value="{{ $currentSeat }}"
         required
-        data-movie-select
-        data-movie-theaters='{!! collect($movieTheaters)->toJson(JSON_HEX_APOS | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_QUOT) !!}'
-        class="mt-2 w-full rounded-2xl border border-white/10 bg-neutral-900/90 px-4 py-3 text-white outline-none transition focus:border-[#E50914] focus:ring-4 focus:ring-red-600/20"
+        data-seat-input
     >
-        <option value="" class="bg-black">Select a movie</option>
-        @foreach ($movies as $movie)
-            <option value="{{ $movie }}" @selected($selectedMovie === $movie) class="bg-black">
-                {{ $movie }}
-            </option>
-        @endforeach
-    </select>
-</label>
-
-<div class="grid gap-4 sm:grid-cols-2">
-    <label class="block">
-        <span class="text-sm font-semibold text-neutral-200">Theater</span>
-        <input
-            name="theater"
-            value="{{ $selectedTheater }}"
-            required
-            readonly
-            maxlength="60"
-            data-theater-input
-            class="mt-2 w-full rounded-2xl border border-red-600/30 bg-red-950/30 px-4 py-3 text-red-100 outline-none transition focus:border-[#E50914] focus:ring-4 focus:ring-red-600/20"
-            placeholder="Auto-filled by movie"
-        >
-        <span class="mt-2 block text-xs text-neutral-400">Theater is assigned automatically from the selected movie.</span>
-    </label>
-
-    <div class="rounded-2xl border border-red-600/30 bg-red-950/30 px-4 py-3">
-        <span class="text-sm font-semibold text-neutral-200">Selected seat</span>
-        <input
-            type="hidden"
-            name="seat_number"
-            value="{{ $selectedSeat }}"
-            required
-            data-seat-input
-        >
-        <p class="mt-2 text-2xl font-black text-red-200" data-selected-seat-label>
-            {{ $selectedSeat ?: 'Choose below' }}
-        </p>
-    </div>
+    <p class="mt-2 text-2xl font-black text-red-200" data-selected-seat-label>
+        {{ $currentSeat ?: 'Choose below' }}
+    </p>
 </div>
 
-<div class="grid gap-4 sm:grid-cols-2">
-    <label class="block">
-        <span class="text-sm font-semibold text-neutral-200">Show date</span>
-        <input
-            type="date"
-            name="show_date"
-            value="{{ $selectedShowDate }}"
-            required
-            class="mt-2 w-full rounded-2xl border border-white/10 bg-neutral-900/90 px-4 py-3 text-white outline-none transition focus:border-[#E50914] focus:ring-4 focus:ring-red-600/20"
-        >
-    </label>
-
-    <label class="block">
-        <span class="text-sm font-semibold text-neutral-200">Show time</span>
-        <select
-            name="show_time"
-            required
-            class="mt-2 w-full rounded-2xl border border-white/10 bg-neutral-900/90 px-4 py-3 text-white outline-none transition focus:border-[#E50914] focus:ring-4 focus:ring-red-600/20"
-        >
-            <option value="" class="bg-black">Select show time</option>
-            @foreach ($showTimes as $showTime)
-                <option value="{{ $showTime }}" @selected($selectedShowTime === $showTime) class="bg-black">
-                    {{ \Carbon\Carbon::createFromFormat('H:i', $showTime)->format('g:i A') }}
-                </option>
-            @endforeach
-        </select>
-    </label>
-</div>
-
-<section
-    class="cinema-seat-map"
-    data-seat-map
-    data-current-reservation-id="{{ $reservation?->id }}"
-    data-reservations='{!! $seatMapReservations->toJson(JSON_HEX_APOS | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_QUOT) !!}'
->
+<section class="cinema-seat-map" data-seat-map>
     <div class="cinema-curtain cinema-curtain-left" aria-hidden="true"></div>
     <div class="cinema-curtain cinema-curtain-right" aria-hidden="true"></div>
 
@@ -133,14 +61,19 @@
                 <div class="grid grid-cols-[1.5rem_repeat(6,minmax(2.25rem,1fr))] items-center gap-3 sm:grid-cols-[2rem_repeat(6,minmax(3rem,1fr))] sm:gap-5">
                     <div class="text-xl font-black text-neutral-200">{{ $row }}</div>
                     @foreach ($seatColumns as $column)
-                        @php($seatCode = $row.$column)
+                        @php
+                            $seatCode = $row.$column;
+                            $isBooked = $bookedSeats->contains($seatCode) && $seatCode !== $currentSeat;
+                            $state = $isBooked ? 'booked' : ($seatCode === $currentSeat ? 'selected' : 'available');
+                        @endphp
                         <button
                             type="button"
                             class="cinema-seat-button {{ $column === 4 ? 'cinema-seat-aisle' : '' }}"
                             data-seat="{{ $seatCode }}"
-                            data-state="{{ $selectedSeat === $seatCode ? 'selected' : 'available' }}"
-                            aria-label="Seat {{ $seatCode }}"
-                            aria-pressed="{{ $selectedSeat === $seatCode ? 'true' : 'false' }}"
+                            data-state="{{ $state }}"
+                            @disabled($isBooked)
+                            aria-label="Seat {{ $seatCode }} {{ $state }}"
+                            aria-pressed="{{ $seatCode === $currentSeat ? 'true' : 'false' }}"
                         >
                             <span class="cinema-seat-icon" aria-hidden="true"></span>
                             <span class="sr-only">Seat {{ $seatCode }}</span>
@@ -158,15 +91,15 @@
         </div>
 
         <div class="mt-8 grid gap-3 text-center text-base font-semibold text-neutral-300 sm:grid-cols-3 sm:text-lg">
-            <p>Booked seats: <span data-booked-count>0</span></p>
-            <p>Available seats: <span data-available-count>18</span></p>
-            <p>Total seats: <span data-total-count>18</span></p>
+            <p>Booked seats: <span data-booked-count>{{ $bookedCount }}</span></p>
+            <p>Available seats: <span data-available-count>{{ $totalSeats - $bookedCount }}</span></p>
+            <p>Total seats: <span data-total-count>{{ $totalSeats }}</span></p>
         </div>
     </div>
 </section>
 
 <p class="text-xs leading-5 text-neutral-400">
-    Pick the movie, theater, date, and time first; the map will mark seats already booked for that exact show. Valid seats are A1-C6.
+    Pick any open seat in the grid (A1-C6). Greyed seats are already booked for this show.
 </p>
 
 <button class="w-full rounded-2xl bg-[#E50914] px-5 py-3 font-black text-white shadow-lg shadow-red-950/60 transition hover:bg-red-700">

@@ -12,19 +12,15 @@ class SeatReservation extends Model
 
     protected $fillable = [
         'user_id',
+        'show_id',
         'customer_name',
-        'movie_title',
-        'theater',
         'seat_number',
-        'show_date',
-        'show_time',
     ];
 
-    protected function casts(): array
+    // The showtime (movie) this seat was booked for.
+    public function movie(): BelongsTo
     {
-        return [
-            'show_date' => 'date',
-        ];
+        return $this->belongsTo(Movie::class, 'show_id', 'show_id');
     }
 
     public function user(): BelongsTo

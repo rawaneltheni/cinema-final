@@ -11,21 +11,19 @@ return new class extends Migration
         Schema::create('seat_reservations', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
+            // Each reservation belongs to one showtime (the "movie" being booked).
+            $table->unsignedInteger('show_id');
             $table->string('customer_name', 80);
-            $table->string('movie_title', 120);
-            $table->string('theater', 60);
-            $table->string('seat_number', 10);
-            $table->date('show_date');
-            $table->time('show_time');
+            $table->string('seat_number', 2);
             $table->timestamps();
 
-            $table->unique([
-                'theater',
-                'movie_title',
-                'show_date',
-                'show_time',
-                'seat_number',
-            ], 'seat_reservations_unique_show_seat');
+            $table->foreign('show_id')
+                ->references('show_id')
+                ->on('showtimes')
+                ->cascadeOnDelete();
+
+            // A given seat can only be booked once per showtime.
+            $table->unique(['show_id', 'seat_number']);
         });
     }
 

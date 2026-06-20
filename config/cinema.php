@@ -1,27 +1,7 @@
 <?php
 
 return [
-    'movies' => [
-        'The Midnight Premiere',
-        'Galactic Drift',
-        'Desert Lights',
-        'The Last Reel',
-        'Comedy Night Live',
-    ],
-
-    'movie_theaters' => [
-        'The Midnight Premiere' => 'Screen 2',
-        'Galactic Drift' => 'IMAX Hall',
-        'Desert Lights' => 'Screen 1',
-        'The Last Reel' => 'Screen 3',
-        'Comedy Night Live' => 'VIP Lounge',
-    ],
-
-    'show_times' => [
-        '12:00',
-        '15:30',
-        '18:00',
-        '19:30',
-        '21:45',
-    ],
+    // The fixed seat grid for every hall: rows A-C, seats 1-6 (18 seats).
+    'seat_rows' => ['A', 'B', 'C'],
+    'seat_columns' => [1, 2, 3, 4, 5, 6],
 ];

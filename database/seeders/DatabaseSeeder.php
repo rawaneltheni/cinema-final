@@ -160,16 +160,18 @@ class DatabaseSeeder extends Seeder
                 ->addMinutes($movie['duration'])
                 ->format('H:i');
 
+            // The show date is the upcoming screening date (not the release date),
+            // so each movie is scheduled on a distinct day over the coming week.
+            $showDate = Carbon::today()->addDays($index + 1)->format('Y-m-d');
+
             Showtime::updateOrCreate(
-                [
-                    'movie_title' => $movie['movie_name'],
-                    'show_date' => $movie['release_date'],
-                    'start_time' => $startTime,
-                ],
+                ['movie_title' => $movie['movie_name']],
                 [
                     'image' => $movie['image'],
                     'genre' => $movie['genre'],
                     'hall_number' => $index + 1,
+                    'show_date' => $showDate,
+                    'start_time' => $startTime,
                     'end_time' => $endTime,
                     'available_seats' => $movie['available_seats'],
                     'ticket_price' => $movie['ticket_price'],
