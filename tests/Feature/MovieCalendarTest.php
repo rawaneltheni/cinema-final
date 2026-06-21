@@ -39,6 +39,7 @@ class MovieCalendarTest extends TestCase
             ->assertOk()
             ->assertSee('Dashboard')
             ->assertSee('Movie Calendar')
+            ->assertSee('Bookings')
             ->assertSee('id="sidebar_toggle"', false)
             ->assertSee('Hide sidebar')
             ->assertSee('Cinema Manager')

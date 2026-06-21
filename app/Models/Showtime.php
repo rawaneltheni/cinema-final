@@ -6,6 +6,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 // These fields are allowed to be saved using create() and update().
 #[Fillable([
@@ -37,6 +38,11 @@ class Showtime extends Model
                         : 'Showing';
             }
         });
+    }
+
+    public function bookings(): HasMany
+    {
+        return $this->hasMany(Booking::class, 'showtime_id', 'show_id');
     }
 
     // Cast database values into better PHP formats when reading them.

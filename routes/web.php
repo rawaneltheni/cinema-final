@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Auth\GoogleController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\BookingController;
 use App\Http\Controllers\ShowtimeController;
 use App\Models\Showtime;
 use Illuminate\Http\Request;
@@ -60,6 +61,8 @@ Route::get('auth/google/callback', [GoogleController::class, 'handleGoogleCallba
 // These showtime CRUD routes are protected by the username session middleware.
 Route::middleware('username.session')->group(function () {
     Route::get('/calendar', [ShowtimeController::class, 'calendar'])->name('calendar');
+    Route::get('/bookings', [BookingController::class, 'index'])->name('bookings.index');
+    Route::patch('/bookings/{booking}/status', [BookingController::class, 'updateStatus'])->name('bookings.status');
     // Resource routes create index, create, store, edit, update, and destroy routes.
     Route::resource('showtimes', ShowtimeController::class)->except(['show']);
 });

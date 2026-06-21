@@ -54,6 +54,7 @@
         .stat:hover { transform: translateY(-4px); border-color: #d9274d; box-shadow: 0 14px 30px rgba(0, 0, 0, .25); }
         .stat span { display: block; color: #a7b0c0; font-size: 13px; margin-bottom: 6px; }
         .stat strong { font-size: 24px; }
+        .booking-container { width: min(1280px, calc(100% - 32px)); }
         .row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
         label { display: block; font-weight: 700; margin-bottom: 7px; }
         input, textarea, select { width: 100%; border: 1px solid #384254; border-radius: 6px; padding: 11px 12px; font: inherit; background: #0f141d; color: #f8fafc; }
@@ -101,6 +102,13 @@
         .badge { border-radius: 999px; display: inline-flex; font-weight: 700; font-size: 12px; padding: 5px 9px; }
         .badge-showing { background: #064e3b; color: #bbf7d0; }
         .badge-coming { background: #7c2d12; color: #fed7aa; }
+        .badge-vip { background: #581c87; color: #f3e8ff; border: 1px solid #a855f7; }
+        .badge-premium { background: #164e63; color: #cffafe; border: 1px solid #06b6d4; }
+        .badge-booking-pending { background: #713f12; color: #fef3c7; border: 1px solid #d97706; }
+        .badge-booking-accepted { background: #064e3b; color: #bbf7d0; border: 1px solid #059669; }
+        .badge-booking-rejected { background: #7f1d1d; color: #fecaca; border: 1px solid #dc2626; }
+        .table-subtext { display: block; margin-top: 4px; color: #9aa6b8; font-size: 12px; line-height: 1.35; }
+        .button:disabled { cursor: not-allowed; opacity: .48; transform: none; filter: none; box-shadow: none; }
         .empty { text-align: center; color: #a7b0c0; padding: 36px 12px; }
         .pagination { margin-top: 18px; }
         .calendar-container { width: min(1320px, calc(100% - 32px)); }
@@ -183,10 +191,14 @@
                             <span class="sidebar-icon">CA</span>
                             <span>Movie Calendar</span>
                         </a>
+                        <a class="sidebar-link {{ request()->routeIs('bookings.*') ? 'active' : '' }}" href="{{ route('bookings.index') }}" @if(request()->routeIs('bookings.*')) aria-current="page" @endif>
+                            <span class="sidebar-icon">BK</span>
+                            <span>Bookings</span>
+                        </a>
                     </nav>
                     <footer class="sidebar-note">
                         <strong>Cinema Manager</strong>
-                        <span>Manage schedules, posters, halls, seats, and calendar dates from one place.</span>
+                        <span>Manage schedules, bookings, seats, payments, and calendar dates from one place.</span>
                     </footer>
                 </aside>
 
