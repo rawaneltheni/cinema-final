@@ -2,9 +2,11 @@
 
 namespace App\Models;
 
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 // These fields are allowed to be saved using create() and update().
 #[Fillable([
@@ -25,6 +27,23 @@ class Showtime extends Model
 
     // The showtimes table uses show_id instead of Laravel's default id column.
     protected $primaryKey = 'show_id';
+
+    protected static function booted(): void
+    {
+        static::saving(function (Showtime $showtime): void {
+            if ($showtime->show_date) {
+                $showtime->movie_status = CarbonImmutable::parse($showtime->show_date)
+                    ->isAfter(CarbonImmutable::today())
+                        ? 'Coming Soon'
+                        : 'Showing';
+            }
+        });
+    }
+
+    public function bookings(): HasMany
+    {
+        return $this->hasMany(Booking::class, 'showtime_id', 'show_id');
+    }
 
     // Cast database values into better PHP formats when reading them.
     protected function casts(): array

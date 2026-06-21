@@ -106,11 +106,6 @@
                     @endforelse
                 </tbody>
             </table>
-
-            {{-- Laravel pagination links for the showtime list. --}}
-            <div class="pagination">
-                {{ $showtimes->links() }}
-            </div>
         </section>
     </main>
 </x-admin::layouts.app>

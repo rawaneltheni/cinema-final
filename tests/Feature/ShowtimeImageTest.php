@@ -116,6 +116,22 @@ class ShowtimeImageTest extends TestCase
             'movie_title' => 'Inception',
             'image' => 'https://upload.wikimedia.org/wikipedia/en/2/2e/Inception_%282010%29_theatrical_poster.jpg',
         ]);
+        $this->assertSame(
+            '2026-05-30',
+            Showtime::where('movie_title', 'Inception')->firstOrFail()->show_date->format('Y-m-d'),
+        );
+        $this->assertDatabaseHas('showtimes', [
+            'movie_title' => 'Inception',
+            'movie_status' => 'Showing',
+        ]);
+        $this->assertDatabaseHas('showtimes', [
+            'movie_title' => 'Interstellar',
+            'movie_status' => 'Showing',
+        ]);
+        $this->assertDatabaseHas('showtimes', [
+            'movie_title' => 'The Dark Knight',
+            'movie_status' => 'Showing',
+        ]);
         $this->assertDatabaseHas('showtimes', [
             'movie_title' => 'Frozen',
             'image' => 'https://upload.wikimedia.org/wikipedia/en/thumb/0/05/Frozen_%282013_film%29_poster.jpg/250px-Frozen_%282013_film%29_poster.jpg',

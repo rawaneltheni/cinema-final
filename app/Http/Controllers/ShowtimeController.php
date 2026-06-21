@@ -3,6 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Showtime;
+use Carbon\CarbonImmutable;
+use Carbon\CarbonInterface;
+use Carbon\CarbonPeriod;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -12,7 +15,7 @@ use Illuminate\View\View;
 
 class ShowtimeController extends Controller
 {
-    // Display the dashboard with showtime records, search, statistics, and pagination.
+    // Display the dashboard with showtime records, search, and statistics.
     public function index(Request $request): View
     {
         // Read the search text from the URL query string.
@@ -27,13 +30,10 @@ class ShowtimeController extends Controller
                     ->orWhere('hall_number', 'like', "%{$search}%")
                     ->orWhere('show_date', 'like', "%{$search}%");
             })
-            // Sort records by date first, then by start time.
-            ->orderBy('show_date')
-            ->orderBy('start_time')
-            // Show 8 records per page.
-            ->paginate(8)
-            // Keep the search value in pagination links.
-            ->withQueryString();
+            // Show the newest created records first so added movies appear immediately.
+            ->latest('created_at')
+            ->latest('show_id')
+            ->get();
 
         // Send all dashboard data to the showtimes index view.
         return view('Admin.showtimes.index', [
@@ -46,6 +46,38 @@ class ShowtimeController extends Controller
             'totalHalls' => Showtime::distinct('hall_number')->count('hall_number'),
             // Sum all available seats for the dashboard statistic.
             'availableSeats' => Showtime::sum('available_seats'),
+        ]);
+    }
+
+    // Display showtimes in a monthly movie calendar.
+    public function calendar(Request $request): View
+    {
+        $validated = $request->validate([
+            'month' => ['nullable', 'date_format:Y-m'],
+        ]);
+
+        $latestShowDate = Showtime::max('show_date');
+        $month = isset($validated['month'])
+            ? CarbonImmutable::createFromFormat('Y-m', $validated['month'])->startOfMonth()
+            : CarbonImmutable::parse($latestShowDate ?? now())->startOfMonth();
+
+        $calendarStart = $month->startOfWeek(CarbonInterface::SUNDAY);
+        $calendarEnd = $month->endOfMonth()->endOfWeek(CarbonInterface::SATURDAY);
+        $calendarDays = collect(CarbonPeriod::create($calendarStart, $calendarEnd))
+            ->map(fn ($day) => $day->toImmutable());
+
+        $showtimesByDate = Showtime::query()
+            ->whereBetween('show_date', [$calendarStart->toDateString(), $calendarEnd->toDateString()])
+            ->orderBy('show_date')
+            ->orderBy('start_time')
+            ->get()
+            ->groupBy(fn (Showtime $showtime) => $showtime->show_date->format('Y-m-d'));
+
+        return view('Admin.showtimes.calendar', [
+            'month' => $month,
+            'calendarDays' => $calendarDays,
+            'showtimesByDate' => $showtimesByDate,
+            'username' => $request->session()->get('username'),
         ]);
     }
 
@@ -142,6 +174,11 @@ class ShowtimeController extends Controller
             // No new file or OMDb poster was chosen, so retain the existing image.
             unset($data['image']);
         }
+
+        // Status follows the schedule date so future movies always appear as Coming Soon.
+        $data['movie_status'] = CarbonImmutable::parse($data['show_date'])->isAfter(CarbonImmutable::today())
+            ? 'Coming Soon'
+            : 'Showing';
 
         return $data;
     }

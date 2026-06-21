@@ -2,8 +2,9 @@
 
 use App\Http\Controllers\Auth\GoogleController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\BookingController;
 use App\Http\Controllers\ShowtimeController;
-use App\Http\Controllers\User\BookingController;
+use App\Http\Controllers\User\BookingController as UserBookingController;
 use App\Http\Controllers\User\HomeController;
 use App\Models\Showtime;
 use Illuminate\Http\Request;
@@ -64,12 +65,16 @@ Route::middleware('username.session')->group(function () {
     Route::get('/home', [HomeController::class, 'index'])->name('user.home');
 
     // Seat booking is scoped to one showtime (movie); reservations belong to it.
-    Route::get('/movies/{movie}/booking', [BookingController::class, 'create'])->name('movies.booking');
-    Route::post('/movies/{movie}/booking', [BookingController::class, 'store'])->name('movies.booking.store');
-    Route::get('/reservations/{seatReservation}/edit', [BookingController::class, 'edit'])->name('reservations.edit');
-    Route::put('/reservations/{seatReservation}', [BookingController::class, 'update'])->name('reservations.update');
-    Route::delete('/reservations/{seatReservation}', [BookingController::class, 'destroy'])->name('reservations.destroy');
+    Route::get('/movies/{movie}/booking', [UserBookingController::class, 'create'])->name('movies.booking');
+    Route::post('/movies/{movie}/booking', [UserBookingController::class, 'store'])->name('movies.booking.store');
+    Route::get('/reservations/{seatReservation}/edit', [UserBookingController::class, 'edit'])->name('reservations.edit');
+    Route::put('/reservations/{seatReservation}', [UserBookingController::class, 'update'])->name('reservations.update');
+    Route::delete('/reservations/{seatReservation}', [UserBookingController::class, 'destroy'])->name('reservations.destroy');
 
+    // Admin-facing booking management and calendar.
+    Route::get('/calendar', [ShowtimeController::class, 'calendar'])->name('calendar');
+    Route::get('/bookings', [BookingController::class, 'index'])->name('bookings.index');
+    Route::patch('/bookings/{booking}/status', [BookingController::class, 'updateStatus'])->name('bookings.status');
     // Resource routes create index, create, store, edit, update, and destroy routes.
     Route::resource('showtimes', ShowtimeController::class)->except(['show']);
 });

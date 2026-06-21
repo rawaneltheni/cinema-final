@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Booking;
 use App\Models\SeatReservation;
 use App\Models\Showtime;
 use App\Models\User;
@@ -202,6 +203,87 @@ class DatabaseSeeder extends Seeder
                     'movie_status' => Carbon::parse($movie['show_date'])->isAfter(Carbon::today())
                         ? 'Coming Soon'
                         : 'Showing',
+                ],
+            );
+        }
+
+        $bookings = [
+            [
+                'movie_title' => 'Inception',
+                'customer_name' => 'Kalthoum',
+                'customer_email' => 'kalthoum@example.com',
+                'chair_type' => 'VIP',
+                'chair_count' => 2,
+                'seat_numbers' => 'A12, A13',
+                'snacks' => 'Popcorn combo, cola',
+                'status' => 'pending',
+                'payment_status' => 'paid',
+                'payment_method' => 'Visa',
+            ],
+            [
+                'movie_title' => 'Interstellar',
+                'customer_name' => 'malak',
+                'customer_email' => 'malak@example.com',
+                'chair_type' => 'Premium',
+                'chair_count' => 4,
+                'seat_numbers' => 'B10, B11, B12, B13',
+                'snacks' => 'Nachos, water',
+                'status' => 'accepted',
+                'payment_status' => 'paid',
+                'payment_method' => 'Mastercard',
+            ],
+            [
+                'movie_title' => 'Avatar',
+                'customer_name' => 'mayar',
+                'customer_email' => 'mayar@example.com',
+                'chair_type' => 'VIP',
+                'chair_count' => 3,
+                'seat_numbers' => 'C7, C8, C9',
+                'snacks' => null,
+                'status' => 'rejected',
+                'payment_status' => 'refunded',
+                'payment_method' => 'Cash',
+            ],
+            [
+                'movie_title' => 'Frozen',
+                'customer_name' => 'rawan',
+                'customer_email' => 'rawan@example.com',
+                'chair_type' => 'Premium',
+                'chair_count' => 5,
+                'seat_numbers' => 'D4, D5, D6, D7, D8',
+                'snacks' => 'Kids popcorn, juice',
+                'status' => 'pending',
+                'payment_status' => 'unpaid',
+                'payment_method' => null,
+            ],
+        ];
+
+        foreach ($bookings as $booking) {
+            $showtime = Showtime::where('movie_title', $booking['movie_title'])->first();
+
+            if (! $showtime) {
+                continue;
+            }
+
+            $chairPrice = $booking['chair_type'] === 'VIP' ? 8 : 4;
+            $snackPrice = $booking['snacks'] ? 7 : 0;
+            $amount = ((float) $showtime->ticket_price + $chairPrice) * $booking['chair_count'] + $snackPrice;
+
+            Booking::updateOrCreate(
+                [
+                    'customer_email' => $booking['customer_email'],
+                    'showtime_id' => $showtime->show_id,
+                ],
+                [
+                    'customer_name' => $booking['customer_name'],
+                    'chair_type' => $booking['chair_type'],
+                    'chair_count' => $booking['chair_count'],
+                    'seat_numbers' => $booking['seat_numbers'],
+                    'snacks' => $booking['snacks'],
+                    'status' => $booking['status'],
+                    'payment_status' => $booking['payment_status'],
+                    'payment_amount' => $amount,
+                    'payment_method' => $booking['payment_method'],
                 ],
             );
         }
