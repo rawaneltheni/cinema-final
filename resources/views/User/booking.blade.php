@@ -80,6 +80,34 @@
             </dl>
         </div>
 
+        <div class="space-y-6">
+        @if ($userReservations->isNotEmpty())
+            <div class="rounded-[2rem] border border-emerald-300/20 bg-emerald-400/5 p-6 shadow-2xl shadow-black/50">
+                <p class="text-sm uppercase tracking-[0.28em] text-emerald-300">Your reservations</p>
+                <h2 class="mt-2 text-2xl font-black text-white">Seats you've booked</h2>
+
+                <ul class="mt-5 space-y-3">
+                    @foreach ($userReservations as $reservation)
+                        <li class="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/10 bg-neutral-950/70 px-4 py-3">
+                            <span class="text-lg font-black text-white">Seat {{ strtoupper($reservation->seat_number) }}</span>
+                            <div class="flex items-center gap-2">
+                                <a href="{{ route('reservations.edit', $reservation) }}" class="rounded-full border border-white/15 px-4 py-2 text-sm font-semibold text-neutral-100 transition hover:border-[#E50914] hover:text-red-300">
+                                    Edit
+                                </a>
+                                <form method="POST" action="{{ route('reservations.destroy', $reservation) }}" onsubmit="return confirm('Cancel your reservation for seat {{ strtoupper($reservation->seat_number) }}?');">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button class="rounded-full border border-red-400/40 bg-red-500/10 px-4 py-2 text-sm font-semibold text-red-200 transition hover:bg-red-500/20">
+                                        Cancel
+                                    </button>
+                                </form>
+                            </div>
+                        </li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
         <div class="rounded-[2rem] border border-white/10 bg-black/75 p-6 shadow-2xl shadow-black/50">
             <p class="text-sm uppercase tracking-[0.28em] text-red-500">Reserve a seat</p>
             <h2 class="mt-2 text-2xl font-black text-white">Choose your seat</h2>
@@ -98,6 +126,7 @@
                     @endif
                 </div>
             @endif
+        </div>
         </div>
     </section>
 @endsection
