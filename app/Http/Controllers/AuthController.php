@@ -10,9 +10,6 @@ use Illuminate\Contracts\View\View;
 
 class AuthController extends Controller
 {
-    private const HARDCODED_USER_USERNAME = 'user';
-    private const HARDCODED_USER_PASSWORD = 'password';
-
     // Show the login page to the user.
     public function showLogin(): View
     {
@@ -27,16 +24,6 @@ class AuthController extends Controller
             'username' => ['required', 'string', 'max:255'],
             'password' => ['required', 'string'],
         ]);
-
-        if (
-            $credentials['username'] === self::HARDCODED_USER_USERNAME
-            && $credentials['password'] === self::HARDCODED_USER_PASSWORD
-        ) {
-            $request->session()->regenerate();
-            $request->session()->put('username', self::HARDCODED_USER_USERNAME);
-
-            return redirect()->route('user.home');
-        }
 
         // Find the user record by username.
         $user = User::where('username', $credentials['username'])->first();
